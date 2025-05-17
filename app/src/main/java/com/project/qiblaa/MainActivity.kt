@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +46,7 @@ import com.project.qiblaa.data.Time
 import com.project.qiblaa.ui.theme.Primary
 import com.project.qiblaa.ui.theme.QiblaaTheme
 import com.project.qiblaa.ui.theme.White
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,12 +57,14 @@ class MainActivity : ComponentActivity() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     UpperSection(
                         time = "Siang",
                     )
                     MiddleSection()
+                    BottomSection()
                 }
             }
         }
@@ -472,8 +476,8 @@ fun SinglePrayTime(
     prayTime: Time,
     isNotification: Boolean = true,
 ) {
-    val prayHour = String.format("%02d", prayTime.hour)
-    val prayMinute = String.format("%02d", prayTime.minute)
+    val prayHour = String.format(Locale.ROOT, "%02d", prayTime.hour)
+    val prayMinute = String.format(Locale.ROOT, "%02d", prayTime.minute)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -523,6 +527,83 @@ fun SinglePrayTime(
     }
 }
 
+@Composable
+fun BottomSection() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f, true)
+                .background(
+                    color = Primary,
+                    shape = RoundedCornerShape(
+                        size = 8.dp
+                    )
+                )
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_notes),
+                    contentDescription = null,
+                    tint = White
+                )
+                Text(
+                    text = "Recap Sholat",
+                    style = MaterialTheme.typography.titleMedium.copy(color = White),
+                )
+            }
+            Image(
+                painter = painterResource(R.drawable.banner_notes),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+            )
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f, true)
+                .background(
+                    color = Primary,
+                    shape = RoundedCornerShape(
+                        size = 8.dp
+                    )
+                )
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_compass),
+                    contentDescription = null,
+                    tint = White
+                )
+                Text(
+                    text = "Arah Kiblat",
+                    style = MaterialTheme.typography.titleMedium.copy(color = White),
+                )
+            }
+            Image(
+                painter = painterResource(R.drawable.banner_kiblat),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun MainPagePreview() {
@@ -537,6 +618,7 @@ fun MainPagePreview() {
                 time = "Siang",
             )
             MiddleSection()
+            BottomSection()
         }
     }
 }
