@@ -29,6 +29,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +51,10 @@ import com.project.qiblaa.data.Time
 import com.project.qiblaa.ui.theme.Primary
 import com.project.qiblaa.ui.theme.QiblaaTheme
 import com.project.qiblaa.ui.theme.White
+import kotlinx.coroutines.delay
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -54,40 +63,67 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QiblaaTheme {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    UpperSection(
-                        time = "Siang",
-                    )
-                    MiddleSection()
-                    BottomSection()
-                }
+                MainPage()
             }
         }
     }
 }
 
 @Composable
-fun UpperSection(
-    time: String
-) {
+fun MainPage() {
+    val zoneId = ZoneId.systemDefault()
+    var zonedDateTime by remember { mutableStateOf(ZonedDateTime.now(zoneId)) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            zonedDateTime = ZonedDateTime.now(zoneId)
+            delay((60 - zonedDateTime.second) * 1000L)
+        }
+    }
+
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Assalamu'alaikum, Selamat $time!",
-            style = MaterialTheme.typography.titleMedium,
+        UpperSection(
+            currentDateTime = zonedDateTime
         )
-        DateTimeCard()
+        MiddleSection()
+        BottomSection()
     }
 }
 
 @Composable
-fun DateTimeCard() {
+fun UpperSection(
+    currentDateTime: ZonedDateTime
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        val dayPart = when (currentDateTime.hour) {
+            in 0..11 -> "Pagi"
+            in 12..15 -> "Siang"
+            in 16..18 -> "Sore"
+            else -> "Malam"
+        }
+
+        Text(
+            text = "Assalamu'alaikum, Selamat $dayPart!",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        DateTimeCard(
+            currentDateTime = currentDateTime
+        )
+    }
+}
+
+@Composable
+fun DateTimeCard(
+    currentDateTime: ZonedDateTime
+) {
     Column(
         modifier = Modifier
             .shadow(
@@ -106,23 +142,10 @@ fun DateTimeCard() {
             )
     ) {
         DisplayDate(
-            date = Date(
-                day = 1,
-                month = 1,
-                year = 2025,
-                dayOfWeek = "Senin",
-                monthName = "Januari",
-            )
+            currentDateTime = currentDateTime
         )
         DisplayTime(
-            time = Time(
-                hour = 12,
-                minute = 30,
-                second = 0,
-                amPm = "PM",
-                is24HourFormat = true,
-                timeZone = "WIB",
-            )
+            currentDateTime = currentDateTime
         )
         DisplayUpcomingEvent(
             time = Time(
@@ -137,7 +160,7 @@ fun DateTimeCard() {
 
 @Composable
 fun DisplayDate(
-    date: Date
+    currentDateTime: ZonedDateTime
 ) {
     Row {
         Spacer(
@@ -166,7 +189,7 @@ fun DisplayDate(
                     .size(20.dp)
             )
             Text(
-                text = "${date.day} ${date.monthName} ${date.year}",
+                text = "${currentDateTime.dayOfMonth} ${currentDateTime.month} ${currentDateTime.year}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -175,8 +198,9 @@ fun DisplayDate(
 
 @Composable
 fun DisplayTime(
-    time: Time
+    currentDateTime: ZonedDateTime
 ) {
+
     Text(
         modifier = Modifier
             .padding(
@@ -184,14 +208,18 @@ fun DisplayTime(
             ),
         style = MaterialTheme.typography.displayMedium.copy(color = White),
         text = buildAnnotatedString {
-            append("${time.hour}:${time.minute} ")
+            append("${currentDateTime.hour}:${currentDateTime.minute} ")
             withStyle(
                 style = SpanStyle(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                 )
             ) {
-                append(time.timeZone)
+                append(
+                    currentDateTime.format(
+                        DateTimeFormatter.ofPattern("z", Locale.getDefault())
+                    )
+                )
             }
         }
     )
@@ -608,17 +636,6 @@ fun BottomSection() {
 @Composable
 fun MainPagePreview() {
     QiblaaTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            UpperSection(
-                time = "Siang",
-            )
-            MiddleSection()
-            BottomSection()
-        }
+        MainPage()
     }
 }
